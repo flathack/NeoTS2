@@ -33,6 +33,7 @@ public:
     std::vector<std::pair<dbpf::ResourceKey, std::vector<std::uint8_t>>> everyGroupResource(std::uint32_t group) override;
     [[nodiscard]] std::optional<std::string> string(std::uint32_t group, std::uint16_t instance,
                                       std::size_t index) override;
+    [[nodiscard]] std::optional<std::string> displayString(std::uint32_t group, std::uint16_t instance, std::size_t index) override;
     [[nodiscard]] std::optional<std::string> stringDescription(std::uint32_t group, std::uint16_t instance, std::size_t index) override;
     [[nodiscard]] std::optional<std::string> catalogString(std::uint32_t group, std::uint16_t instance, std::size_t index) override;
     [[nodiscard]] std::optional<tga::Pixels> image(std::uint32_t group, std::uint32_t instance, std::uint32_t maxSide) override;
@@ -50,14 +51,14 @@ public:
     }
     // Where string tables the object packages lack are looked for next: the game's text packages,
     // whose Live and UI texts scripts' tokens name (the day names, for one). It gives a table's
-    // US English lines, none when it has no such table.
-    void setTextTables(std::function<std::vector<std::string>(std::uint32_t group, std::uint16_t instance)> lookup) {
+    // lines in `language` (US English where it has none), none when it has no such table.
+    void setTextTables(std::function<std::vector<std::string>(std::uint32_t group, std::uint16_t instance, std::uint8_t language)> lookup) {
         textTables_ = std::move(lookup);
     }
 
 private:
     content::ResourceIndex& index_;
-    std::function<std::vector<std::string>(std::uint32_t, std::uint16_t)> textTables_;
+    std::function<std::vector<std::string>(std::uint32_t, std::uint16_t, std::uint8_t)> textTables_;
     std::unordered_map<std::uint64_t, std::shared_ptr<const bhav::Behavior>> behaviors_;
     std::unordered_map<std::uint64_t, std::shared_ptr<const ttab::InteractionTable>> interactionTables_;
     std::unordered_map<std::uint64_t, std::optional<std::vector<std::int16_t>>> constants_;
@@ -78,10 +79,11 @@ private:
     // A pet uses its species template. TemplatePerson stands in when that template has no trees.
     std::uint32_t privateCodeGroup(std::uint32_t group);
     const std::vector<std::string>& strings(std::uint32_t type, std::uint32_t group, std::uint16_t instance,
-                                           bool descriptions = false);
+                                           bool descriptions = false, bool display = false);
     // Each table's US English texts, by (type, group, instance).
     std::map<std::tuple<std::uint32_t, std::uint32_t, std::uint16_t>, std::vector<std::string>> strings_;
     std::map<std::tuple<std::uint32_t, std::uint32_t, std::uint16_t>, std::vector<std::string>> descriptions_;
+    std::map<std::tuple<std::uint32_t, std::uint32_t, std::uint16_t>, std::vector<std::string>> displayStrings_;
     std::map<std::uint32_t, std::optional<std::map<std::string, std::string>>> ageData_;
     std::unordered_map<std::uint32_t, std::unordered_map<std::string, std::uint16_t>> behaviorNames_;
     bool behaviorNamesLoaded_ = false;

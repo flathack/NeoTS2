@@ -357,7 +357,7 @@ std::map<std::uint32_t, NeighborhoodUi::LotCard> lotCards(const fs::path& folder
                 card.money = std::int64_t{family.funds} + *value;
             }
             if (const auto table = strings.find(id); table != strings.end()) {
-                const auto texts = table->second.forLanguage(1);
+                const auto texts = table->second.forPreferredLanguage(ts2::str::preferredLanguage());
                 card.name = texts.size() > 0 ? texts[0]->value : std::string{};
                 card.text = texts.size() > 1 ? texts[1]->value : std::string{};
             }
@@ -384,7 +384,7 @@ std::map<std::uint32_t, NeighborhoodUi::LotCard> lotCards(const fs::path& folder
                 }
                 NeighborhoodUi::LotCard::Tenant household;
                 if (const auto table = strings.find(family->first); table != strings.end()) {
-                    const auto texts = table->second.forLanguage(1);
+                    const auto texts = table->second.forPreferredLanguage(ts2::str::preferredLanguage());
                     household.name = texts.empty() ? std::string{} : texts[0]->value;
                 }
                 household.funds = family->second.funds;

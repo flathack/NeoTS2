@@ -4,6 +4,10 @@
 #include "formats/binary_writer.hpp"
 
 #include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <string_view>
+#include <utility>
 #include <stdexcept>
 
 namespace ts2::str {
@@ -26,6 +30,46 @@ std::vector<const Entry*> StringTable::forLanguage(std::uint8_t language) const 
         }
     }
     return out;
+}
+
+std::vector<const Entry*> StringTable::forPreferredLanguage(std::uint8_t language) const {
+    auto english = forLanguage(1);
+    if (language == 1) {
+        return english;
+    }
+    const auto own = forLanguage(language);
+    for (std::size_t i = 0; i < own.size(); ++i) {
+        if (i >= english.size()) {
+            english.push_back(own[i]);
+        } else if (!own[i]->value.empty()) {
+            english[i] = own[i];
+        }
+    }
+    return english;
+}
+
+std::uint8_t preferredLanguage() {
+    static const std::uint8_t language = [] {
+        const char* text = std::getenv("NEOTS2_LANGUAGE");
+        if (text == nullptr || *text == 0) {
+            return std::uint8_t{1};
+        }
+        std::string code(text);
+        std::transform(code.begin(), code.end(), code.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        static constexpr std::pair<std::string_view, std::uint8_t> kCodes[] = {
+            {"en", 1}, {"en_us", 1}, {"en_gb", 2}, {"fr", 3}, {"de", 4}, {"it", 5}, {"es", 6}, {"nl", 7},
+            {"da", 8}, {"sv", 9}, {"no", 10}, {"fi", 11}, {"he", 12}, {"pt", 15}, {"ja", 16}, {"pl", 17},
+            {"zh_cn", 18}, {"zh_tw", 19}, {"th", 20}, {"ko", 21}, {"cs", 26}, {"pt_br", 33}, {"ru", 34}, {"hu", 35}};
+        for (const auto& [name, number] : kCodes) {
+            if (code == name || code.rfind(std::string(name) + ".", 0) == 0) {
+                return number;
+            }
+        }
+        char* end = nullptr;
+        const long number = std::strtol(code.c_str(), &end, 10);
+        return end != code.c_str() && *end == 0 && number >= 1 && number <= 255 ? static_cast<std::uint8_t>(number) : std::uint8_t{1};
+    }();
+    return language;
 }
 
 StringTable parse(std::span<const std::uint8_t> data) {

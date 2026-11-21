@@ -49,7 +49,7 @@ bool Execution::actionString(const bhav::Instruction& in, Frame& f) {
             groups = {f.codeOwner, code_.semiGlobalGroup(f.codeOwner), kGlobalGroup};
         }
         for (const auto group : groups) {
-            const auto found = index > 0 ? code_.string(group, kActionStringTable, index - 1u) : std::nullopt;
+            const auto found = index > 0 ? code_.displayString(group, kActionStringTable, index - 1u) : std::nullopt;
             if (found && !found->empty()) {
                 TokenPicture unused;
                 const std::string text = expandTokens(*found, f, unused);

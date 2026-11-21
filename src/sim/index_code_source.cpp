@@ -23,7 +23,6 @@ namespace {
 
 constexpr std::uint32_t kBehaviorConstants = 0x42434F4E;
 constexpr std::uint32_t kSemiGlobalReference = 0x474C4F42;
-constexpr std::uint8_t kUsEnglish = 1;
 // The type new Sims are made from. Its own trees serve Sims whose files carry none.
 constexpr std::uint32_t kTemplatePersonGuid = 0x7FD96B54;
 
@@ -349,16 +348,19 @@ std::vector<const ObjectType*> IndexCodeSource::multiTileParts(const ObjectType&
 }
 
 const std::vector<std::string>& IndexCodeSource::strings(std::uint32_t type, std::uint32_t group, std::uint16_t instance,
-                                                         bool descriptions) {
+                                                         bool descriptions, bool display) {
     const auto key = std::tuple{type, group, instance};
-    auto& cache = descriptions ? descriptions_ : strings_;
+    auto& cache = descriptions ? descriptions_ : display ? displayStrings_ : strings_;
+    // STR# tables also hold names the game looks things up by, so they stay US English unless
+    // shown to the player. Pie-menu (TTAs) and catalog (CTSS) strings are always shown.
+    const std::uint8_t language = type == types::kStringTable && !display ? std::uint8_t{1} : str::preferredLanguage();
     auto it = cache.find(key);
     if (it == cache.end()) {
         std::vector<std::string> values;
         if (const auto* r = index_.find({type, group, instance, 0})) {
             try {
                 const str::StringTable table = str::parse(index_.read(*r));
-                for (const str::Entry* entry : table.forLanguage(kUsEnglish)) {
+                for (const str::Entry* entry : table.forPreferredLanguage(language)) {
                     values.push_back(descriptions ? entry->description : entry->value);
                 }
             } catch (const std::exception& ex) {
@@ -366,7 +368,7 @@ const std::vector<std::string>& IndexCodeSource::strings(std::uint32_t type, std
                                           type, group, instance, ex.what()));
             }
         } else if (type == types::kStringTable && !descriptions && textTables_) {
-            values = textTables_(group, instance);
+            values = textTables_(group, instance, language);
         }
         it = cache.emplace(key, std::move(values)).first;
     }
@@ -375,6 +377,14 @@ const std::vector<std::string>& IndexCodeSource::strings(std::uint32_t type, std
 
 std::optional<std::string> IndexCodeSource::string(std::uint32_t group, std::uint16_t instance, std::size_t index) {
     const auto& values = strings(types::kStringTable, group, instance);
+    return index < values.size() ? std::optional<std::string>(values[index]) : std::nullopt;
+}
+
+std::optional<std::string> IndexCodeSource::displayString(std::uint32_t group, std::uint16_t instance, std::size_t index) {
+    if (str::preferredLanguage() == 1) {
+        return string(group, instance, index);
+    }
+    const auto& values = strings(types::kStringTable, group, instance, false, true);
     return index < values.size() ? std::optional<std::string>(values[index]) : std::nullopt;
 }
 

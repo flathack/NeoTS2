@@ -29,10 +29,10 @@ public:
     // The text a script names as captionres={group, value}: string (value & 0xFFFF), counted from
     // 1, of string table (value >> 16) in the text package with that group, in `language` (1 is US
     // English). Empty when there is none.
-    std::string text(std::uint32_t group, std::uint32_t value, std::uint8_t language = 1);
+    std::string text(std::uint32_t group, std::uint32_t value, std::uint8_t language = str::preferredLanguage());
     // Every string of string table `instance` in the text package with that group, in `language`
     // (US English when the table has none of it). Empty when there is no such table.
-    std::vector<std::string> texts(std::uint32_t group, std::uint32_t instance, std::uint8_t language = 1);
+    std::vector<std::string> texts(std::uint32_t group, std::uint32_t instance, std::uint8_t language = str::preferredLanguage());
 
     // The same strings in every language the table has, by language - 1, as the table holds their
     // bytes. A language it lacks has an empty list. Empty when there is no such table.

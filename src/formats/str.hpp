@@ -22,7 +22,14 @@ struct StringTable {
     std::vector<Entry> entries;
 
     std::vector<const Entry*> forLanguage(std::uint8_t language) const;
+    // Row by row the entry in `language`, or the US English one where that language has no
+    // non-empty text for the row. Rows past English's come from `language` alone.
+    std::vector<const Entry*> forPreferredLanguage(std::uint8_t language) const;
 };
+
+// The language players see texts in: NEOTS2_LANGUAGE as a game language number (1 US English,
+// 3 French, 4 German, ...) or a short code (en, de, fr, ...). US English (1) when unset or unknown.
+std::uint8_t preferredLanguage();
 
 StringTable parse(std::span<const std::uint8_t> data);
 

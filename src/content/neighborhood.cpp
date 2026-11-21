@@ -316,7 +316,7 @@ std::vector<NeighborhoodEntry> listNeighborhoods(const fs::path& neighborhoods) 
             for (const auto& e : p.entries()) {
                 if (e.key.type == 0x43545353) {  // catalog string set: the name first
                     const auto table = str::parse(p.read(e));
-                    const auto names = table.forLanguage(1);
+                    const auto names = table.forPreferredLanguage(str::preferredLanguage());
                     if (!names.empty()) {
                         n.name = names.front()->value;
                     }

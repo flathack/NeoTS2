@@ -51,6 +51,12 @@ public:
     // US English entry `index` of string table (STR#) `instance` in `group`, if any.
     [[nodiscard]] virtual std::optional<std::string> string(std::uint32_t group, std::uint16_t instance,
                                               std::size_t index) = 0;
+    // Entry `index` of that string table in the language players read (str::preferredLanguage),
+    // US English where that language has none: for texts shown to the player, never for names the
+    // game looks things up by (animations, models, sounds...), which keep string()'s US English.
+    [[nodiscard]] virtual std::optional<std::string> displayString(std::uint32_t group, std::uint16_t instance, std::size_t index) {
+        return string(group, instance, index);
+    }
     // The description of that entry, if any.
     [[nodiscard]] virtual std::optional<std::string> stringDescription(std::uint32_t, std::uint16_t, std::size_t) { return std::nullopt; }
     // Picture `instance` (an image resource) in `group`, as the game's thumbnail service shows an

@@ -140,12 +140,9 @@ std::vector<std::string> UiData::texts(std::uint32_t group, std::uint32_t instan
         known = tables_.emplace(key, str::parse(index_.read(*r))).first;
     }
     const auto& table = known->second;
-    const bool has = std::any_of(table.entries.begin(), table.entries.end(), [&](const str::Entry& e) { return e.language == language; });
     std::vector<std::string> out;
-    for (const auto& e : table.entries) {
-        if (e.language == (has ? language : 1)) {
-            out.push_back(asUtf8(e.value));
-        }
+    for (const str::Entry* e : table.forPreferredLanguage(language)) {
+        out.push_back(asUtf8(e->value));
     }
     return out;
 }
@@ -189,11 +186,21 @@ std::string UiData::text(std::uint32_t group, std::uint32_t value, std::uint8_t 
     const auto& table = known->second;
     // The table's own language when it has any, US English otherwise. Found in place, as captions are
     // asked for every frame.
-    const bool has = std::any_of(table.entries.begin(), table.entries.end(), [&](const str::Entry& e) { return e.language == language; });
-    const std::uint8_t used = has ? language : 1;
+    if (language != 1) {
+        // The row in the asked language, or US English's where that language has no text for it.
+        std::uint32_t seen = 0;
+        for (const auto& e : table.entries) {
+            if (e.language == language && ++seen == n) {
+                if (!e.value.empty()) {
+                    return asUtf8(e.value);
+                }
+                break;
+            }
+        }
+    }
     std::uint32_t seen = 0;
     for (const auto& e : table.entries) {
-        if (e.language == used && ++seen == n) {
+        if (e.language == 1 && ++seen == n) {
             return asUtf8(e.value);
         }
     }

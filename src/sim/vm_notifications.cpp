@@ -150,7 +150,7 @@ std::optional<std::string> Execution::expandToken(std::string_view token, int a,
             return std::nullopt;
         }
         // Lines are numbered from 1, and a missing one reads as empty.
-        return *number < 1 ? std::string() : code_.string(group, static_cast<std::uint16_t>(*instance), static_cast<std::size_t>(*number - 1)).value_or("");
+        return *number < 1 ? std::string() : code_.displayString(group, static_cast<std::uint16_t>(*instance), static_cast<std::size_t>(*number - 1)).value_or("");
     };
     const SimObject* stackObj = world().find(stack);
 
@@ -349,7 +349,7 @@ bool Execution::textNotification(const bhav::Instruction& in, Frame& f, std::int
     const std::uint32_t owner = f.codeOwner;
     const std::uint32_t textGroup = (o[8] & 0x01) ? code_.semiGlobalGroup(owner) : (o[8] & 0x40) ? kGlobalGroup : owner;
     const int number = (o[8] & 0x02) ? thread_.temps[0] + 1 : (o[13] | o[14] << 8);
-    std::string text = number < 1 ? std::string() : code_.string(textGroup, kDialogTexts, static_cast<std::size_t>(number - 1)).value_or("");
+    std::string text = number < 1 ? std::string() : code_.displayString(textGroup, kDialogTexts, static_cast<std::size_t>(number - 1)).value_or("");
     TokenPicture picture;
     text = expandTokens(std::move(text), f, picture);
     std::int16_t extra = 0;

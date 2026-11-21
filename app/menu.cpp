@@ -2848,7 +2848,7 @@ void Game::startLotLife() {
         lotLife_->simulation().world().setAsksTypePicker(true);
         lotLife_->simulation().world().setAsksChangeAppearance(true);
         lotLife_->simulation().world().setAsksMessages(true);
-        lotLife_->simulation().setTextTables([this](std::uint32_t group, std::uint16_t instance) { return data_.texts(group, instance); });
+        lotLife_->simulation().setTextTables([this](std::uint32_t group, std::uint16_t instance, std::uint8_t language) { return data_.texts(group, instance, language); });
         lotLife_->simulation().world().setDeclinesGameTips(options_.noGameTips);
         lotLife_->simulation().world().setGameWideInventory(gameWide_->inventory());
         lotLife_->simulation().world().setBabyFirstNames(data_.text(kLiveText, kBabyBoyText), data_.text(kLiveText, kBabyGirlText));

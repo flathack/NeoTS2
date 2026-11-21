@@ -642,7 +642,7 @@ std::optional<bool> Execution::messageDialog(const bhav::Instruction& in, Frame&
     TokenPicture picture;
     auto text = [&](std::uint16_t n) {
         constexpr std::uint16_t kDialogTexts = 0x12D;
-        auto found = n != 0 ? code_.string(textGroup, kDialogTexts, n - 1u) : std::nullopt;
+        auto found = n != 0 ? code_.displayString(textGroup, kDialogTexts, n - 1u) : std::nullopt;
         picture = {};
         return found ? expandTokens(std::move(*found), f, picture) : std::string{};
     };

@@ -76,7 +76,7 @@ public:
     // save held or play made since.
     const std::unordered_set<std::int16_t>& madeAsLoaded() const { return madeAsLoaded_; }
     // See IndexCodeSource::setTextTables.
-    void setTextTables(std::function<std::vector<std::string>(std::uint32_t group, std::uint16_t instance)> lookup) {
+    void setTextTables(std::function<std::vector<std::string>(std::uint32_t group, std::uint16_t instance, std::uint8_t language)> lookup) {
         code_.setTextTables(std::move(lookup));
     }
     // The installed packs, one bit each as nGameState.IsEPInstalled tests them.
